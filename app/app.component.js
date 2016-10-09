@@ -1,23 +1,47 @@
 "use strict";
 var core_1 = require("@angular/core");
+var bluetooth = require("nativescript-bluetooth");
 var AppComponent = (function () {
     function AppComponent() {
-        this.counter = 16;
+        this.UUID = "";
     }
-    Object.defineProperty(AppComponent.prototype, "message", {
-        get: function () {
-            if (this.counter > 0) {
-                return this.counter + " taps left";
+    AppComponent.prototype.hasPermissions = function () {
+        bluetooth.hasCoarseLocationPermission()
+            .then(function (granted) {
+            alert("Permission" + granted);
+        });
+    };
+    AppComponent.prototype.grantPermissions = function () {
+        bluetooth.requestCoarseLocationPermission()
+            .then(function () {
+            alert("Location permission requested");
+        });
+    };
+    AppComponent.prototype.scan = function () {
+        bluetooth.startScanning({
+            serviceUUIDs: [],
+            seconds: 4,
+            onDiscovered: function (peripheral) {
+                console.log("Periperhal found with Name: " + peripheral.name);
+                console.log("Periperhal found with UUID: " + peripheral.UUID);
+                console.log("");
             }
-            else {
-                return "Hoorraaay! \nYou are ready to start building!";
+        }).then(function () {
+            console.log("scanning complete");
+        }, function (err) {
+            console.log("error while scanning: " + err);
+        });
+    };
+    AppComponent.prototype.connect = function () {
+        bluetooth.connect({
+            UUID: this.UUID,
+            onConnected: (function (peripheral) {
+                console.log("Periperhal connected with UUID: " + peripheral.UUID);
+            }),
+            onDisconnected: function (peripheral) {
+                alert("Device disconnected");
             }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    AppComponent.prototype.onTap = function () {
-        this.counter--;
+        });
     };
     AppComponent = __decorate([
         core_1.Component({
